@@ -1,3 +1,7 @@
+output "traffic_manager_external_endpoints_id" {
+  description = "Map of id values across all traffic_manager_external_endpoints, keyed the same as var.traffic_manager_external_endpoints"
+  value       = { for k, v in azurerm_traffic_manager_external_endpoint.traffic_manager_external_endpoints : k => v.id }
+}
 output "traffic_manager_external_endpoints_always_serve_enabled" {
   description = "Map of always_serve_enabled values across all traffic_manager_external_endpoints, keyed the same as var.traffic_manager_external_endpoints"
   value       = { for k, v in azurerm_traffic_manager_external_endpoint.traffic_manager_external_endpoints : k => v.always_serve_enabled }
