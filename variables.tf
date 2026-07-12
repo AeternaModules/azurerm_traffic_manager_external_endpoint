@@ -31,62 +31,39 @@ EOT
     geo_mappings         = optional(list(string))
     priority             = optional(number)
     weight               = optional(number) # Default: 1
-    custom_header = optional(object({
+    custom_header = optional(list(object({
       name  = string
       value = string
-    }))
-    subnet = optional(object({
+    })))
+    subnet = optional(list(object({
       first = string
       last  = optional(string)
       scope = optional(number)
-    }))
+    })))
   }))
-  validation {
-    condition = alltrue([
-      for k, v in var.traffic_manager_external_endpoints : (
-        length(v.name) > 0
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.traffic_manager_external_endpoints : (
-        v.weight == null || (v.weight >= 1 && v.weight <= 1000)
-      )
-    ])
-    error_message = "must be between 1 and 1000"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.traffic_manager_external_endpoints : (
-        v.priority == null || (v.priority >= 1 && v.priority <= 1000)
-      )
-    ])
-    error_message = "must be between 1 and 1000"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.traffic_manager_external_endpoints : (
-        v.subnet == null || (v.subnet.scope == null || (v.subnet.scope >= 0 && v.subnet.scope <= 32))
-      )
-    ])
-    error_message = "must be between 0 and 32"
-  }
   # --- Unconfirmed validation candidates, derived from azurerm_traffic_manager_external_endpoint's provider source ---
   # Not auto-enabled: either a bespoke provider validator we can't safely translate,
   # or a path that crosses a list-typed block (needs its own for_each wrapping).
   # Review, translate into a real validation{} block above, and delete once confirmed.
+  # path: name
+  #   condition: length(value) > 0
+  #   message:   must not be empty
   # path: profile_id
   #   source:    [from profiles.ValidateTrafficManagerProfileID] !ok
   # path: profile_id
   #   source:    [from profiles.ValidateTrafficManagerProfileID] err != nil
   # path: target
   #   source:    validation.NoZeroValues(...) - no translation rule yet, add one
+  # path: weight
+  #   condition: value >= 1 && value <= 1000
+  #   message:   must be between 1 and 1000
   # path: custom_header.name
   #   source:    validation.NoZeroValues(...) - no translation rule yet, add one
   # path: custom_header.value
   #   source:    validation.NoZeroValues(...) - no translation rule yet, add one
+  # path: priority
+  #   condition: value >= 1 && value <= 1000
+  #   message:   must be between 1 and 1000
   # path: subnet.first
   #   source:    [from azValidate.IPv4Address] !ok
   # path: subnet.first
@@ -95,5 +72,8 @@ EOT
   #   source:    [from azValidate.IPv4Address] !ok
   # path: subnet.last
   #   source:    [from azValidate.IPv4Address] four == nil
+  # path: subnet.scope
+  #   condition: value >= 0 && value <= 32
+  #   message:   must be between 0 and 32
 }
 
